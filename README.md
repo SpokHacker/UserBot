@@ -7,6 +7,8 @@
 В этой директории в консоле введите
 "pip install -r requirements.txt"
 
+Поменяйте app_hash и app_id
+
 Запускаете main.py 
 
 Вводите номер ,а затем код который
