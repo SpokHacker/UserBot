@@ -1,18 +1,34 @@
 import telebot
-
+import asyncio
 import os
 from pyrogram import Client, filters
 from googletrans import Translator
-spambots = ["5750837116:AAHjkckRW7SvMLGtaV8qW4bNumHvxOksib8",
-"6262856402:AAE4azw1YFaMaI_HV7RpBAwqE-TapI4wAxo",
-"6053378618:AAGtu-H5j1w3AjgWln1q3Meig2GKHV5T_fA",
-"6154281184:AAF0Mo-D63vnejHoWSmhZFyL63wg6aGQxq0",
-"6424154462:AAHd2JAuFw7K0t21bhRrG-XSRP4fpTd_Oc4",
-"6307519348:AAGgyeu0-bQST2ESzaHwy-EARVQxoAVBBuU",
-"6034336772:AAGfSUYPSxnU_WN2adFmVQQtck24-NCXems",
-"6508957022:AAGxeEBP29LR9eySOGRRmHSvYbeIiY8qPqU",
-"5944003224:AAF12zEe_1ZUNb8-LMWGNXY1UTzTduo_0UU"]
+from pyrogram.enums import UserStatus
+from datetime import datetime
+from pyrogram.raw.functions.messages import RequestWebView
+from urllib.parse import unquote
+from requests.auth import *
+import ast
+import requests
+notiferbot = "6864832548:AAH0DFB4N9e05rK0JST1MOE9_MDM14s41hE"
 
+spambots = ["6424154462:AAHd2JAuFw7K0t21bhRrG-XSRP4fpTd_Oc4",
+            "6307519348:AAGgyeu0-bQST2ESzaHwy-EARVQxoAVBBuU",
+            "5618638676:AAF4va3Ae5gFPffeH9QAOr1i_TikhcKAces",
+            "1668653860:AAH61P0HXn9K5yNmYXuiqLeDcOuMdZJQXZE",
+            "6980680619:AAGma0Bpak9-xzjbmovRZgtVIMa_9AkjTVk",
+            "6905063370:AAFYe9nQLrqTQ-v9swanwUwENHafYE7rh18",
+            "6715565004:AAHV7PIs63ARmF_tOFvupO0tkvt7ZkUUgps",
+            "1919231868:AAGYYYcEGYXlM5d67Zb8zX8tOKb200eD2MU",
+            "6862301136:AAHfF5AhtnxzI54mHxYKR2KhLwPFt94lGEU",
+            "5937952685:AAGm_VKuB4FKas-cMPUfVmtDNdJPw3FCDhs",
+            "7415177117:AAFwA8Ruwp1E0mij5O8hxiHFJepN8a64g98",
+            ]
+
+
+
+
+import asyncio
 from pyrogram.errors import FloodWait
 import pyrogram
 import base64
@@ -44,6 +60,7 @@ BY @SPOKHACKER
 USERBOT:
 .dText <текст> - Эфект печатающегося текста
 .steal <ответ на сообщение> - скопировать имя ,фамилию ,описание и аву
+.dn <текст> - пишет и удаляет сообщение каждые 3 сек 30 раз 
 .dice <число кубика> подобрать dice
 .gpt <вопрос у chat gpt> - спросить у чат гпт
 .spam <Количесто стикеров> - спамит лагучими стикерами
@@ -58,7 +75,10 @@ USERBOT:
 .jlbots - к чату будут подключаться боты и выходить
 .botmsg - отправить соощение от бота если он есть в чате
 .addbots - добавить ботов из списка токенов
-.botclear - очистка текста написаного ботами из списка токенов
+.clock <задержка> - выводит время
+.online <ответ на сообщение> - присылает уведомление если человек появился в сети
+
+
     '''
     app.send_message(chatid, helps)
 
@@ -68,6 +88,14 @@ USERBOT:
 
 def _(chatid, text, omsg):  # Шаблон
     pass
+
+
+
+
+
+
+
+
 def botclear(chatid, text, omsg):
 
     ids = {}
@@ -98,7 +126,34 @@ USERID: {omsg.reply_to_message.from_user.id}'''
 
 def addbots(chatid, text, omsg):
     for i in spambots:
-        app.add_chat_members(chatid, telebot.TeleBot(i).get_me().username)
+        try:
+            app.add_chat_members(chatid, telebot.TeleBot(i).get_me().username)
+        except:
+            pass
+
+def clocktime(chatid, text, omsg):
+    g = app.send_message(chatid, "Функция успешно запущена")
+    while True:
+        time.sleep(int(text))
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        app.edit_message_text(chatid, g.id, current_time)
+def notifercheak(chatid, text, omsg):
+    id = omsg.reply_to_message.from_user.id
+    username = omsg.reply_to_message.from_user.username
+    g = app.send_message(chatid,"Функция успешно запущена")
+    while UserStatus.OFFLINE == app.get_users(id).status:
+        time.sleep(4)
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        app.edit_message_text(chatid,g.id,current_time)
+    bot = telebot.TeleBot(notiferbot)
+    bot.delete_webhook()
+
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+
+    bot.send_message(app.get_me().id,f"Юзер зашёл в телеграм \nUsername: {username}\nВремя: {current_time}")
 def botmsg(chatid, text, omsg):
     for i in spambots:
         bot = telebot.TeleBot(i)
@@ -147,6 +202,7 @@ def n(chatid, text, omsg):
         g = app.send_message(chatid, text)
         time.sleep(3)
         app.delete_messages(chatid, g.id)
+
 
 
 def banall(chatid, text, omsg):
@@ -270,8 +326,11 @@ def dText(id_chat, text, omsg=0):
         app.edit_message_text(id_chat, (msg.id), (d + "▓"))
     app.edit_message_text(id_chat, (msg.id), (d))
     return False
-app = Client("my_account", 666,"919adb3e55666666a417d1a0348ba")
-tgfunctions = {".botclear":botclear,".addbots":addbots,".id":getidd,".dn":n,".dText":dText,".steal":cram,".dice":dice,".gpt":chatgpt,".spam":lagspam,".en":trans,".heart":heart,".calc":calc,".log":logs,".aDell":dell,".help":help,".banall":banall,".spamjoin":botjoiner,".jlbots":jlbot,".botmsg":botmsg}
+app = Client("my_account", 1,"2")
+tgfunctions = {".clock":clocktime,".online":notifercheak,".botclear":botclear,".addbots":addbots,".id":getidd,".dn":n,".dText":dText,".steal":cram,".dice":dice,".gpt":chatgpt,".spam":lagspam,".en":trans,".heart":heart,".calc":calc,".log":logs,".aDell":dell,".help":help,".banall":banall,".spamjoin":botjoiner,".jlbots":jlbot,".botmsg":botmsg}
+
+
+import random
 
 
 @app.on_message(filters.left_chat_member & filters.group)
