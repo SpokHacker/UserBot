@@ -1,16 +1,13 @@
 import telebot
-import asyncio
 import os
 from pyrogram import Client, filters
 from googletrans import Translator
-from pyrogram.enums import UserStatus
+from pyrogram.enums import UserStatus, ChatAction
 from datetime import datetime
-from pyrogram.raw.functions.messages import RequestWebView
-from urllib.parse import unquote
-from requests.auth import *
-import ast
-import requests
-notiferbot = "6864832548:AAH0DFB4N9e05rK0JST1MOE9_MDM14s41hE"
+from pyrogram.errors import FloodWait
+import time
+
+notiferbot = "add your bot"
 
 spambots = ["6424154462:AAHd2JAuFw7K0t21bhRrG-XSRP4fpTd_Oc4",
             "6307519348:AAGgyeu0-bQST2ESzaHwy-EARVQxoAVBBuU",
@@ -25,18 +22,30 @@ spambots = ["6424154462:AAHd2JAuFw7K0t21bhRrG-XSRP4fpTd_Oc4",
             "7415177117:AAFwA8Ruwp1E0mij5O8hxiHFJepN8a64g98",
             ]
 
+actions = {
+    "TYPING":ChatAction.TYPING,
+    "CHOOSE_CONTACT":ChatAction.CHOOSE_CONTACT,
+    "CHOOSE_STICKER":ChatAction.CHOOSE_STICKER,
+    "UPLOAD_VIDEO":ChatAction.UPLOAD_VIDEO,
+    "UPLOAD_AUDIO":ChatAction.UPLOAD_AUDIO,
+    "UPLOAD_PHOTO":ChatAction.UPLOAD_PHOTO,
+    "UPLOAD_DOCUMENT":ChatAction.UPLOAD_DOCUMENT,
+    "UPLOAD_VIDEO_NOTE":ChatAction.UPLOAD_VIDEO_NOTE,
+    "FIND_LOCATION":ChatAction.FIND_LOCATION,
+    "IMPORT_HISTORY":ChatAction.IMPORT_HISTORY,
+    "PLAYING":ChatAction.PLAYING,
+    "RECORD_AUDIO":ChatAction.RECORD_AUDIO,
+    "RECORD_VIDEO":ChatAction.RECORD_VIDEO,
+    "RECORD_VIDEO_NOTE":ChatAction.RECORD_VIDEO_NOTE,
+    "SPEAKING":ChatAction.SPEAKING,
+    "STOP":ChatAction.CANCEL,
+}
 
 
 
-import asyncio
-from pyrogram.errors import FloodWait
-import pyrogram
-import base64
 
-import time
-from pyrogram.raw import functions
 
-lefter = False
+
 
 
 # Функция чтобы заливать файлы на 0x0.st
@@ -59,6 +68,7 @@ def help(chatid, text, omsg):
 BY @SPOKHACKER
 USERBOT:
 .dText <текст> - Эфект печатающегося текста
+.bText [текст] - прикольный эффект текста
 .steal <ответ на сообщение> - скопировать имя ,фамилию ,описание и аву
 .dn <текст> - пишет и удаляет сообщение каждые 3 сек 30 раз 
 .dice <число кубика> подобрать dice
@@ -77,17 +87,47 @@ USERBOT:
 .addbots - добавить ботов из списка токенов
 .clock <задержка> - выводит время
 .online <ответ на сообщение> - присылает уведомление если человек появился в сети
+.setAction <Навание действия> - устанавливает действие например TYPING
 
 
     '''
+
     app.send_message(chatid, helps)
 
+def fake_action(chatid, text, omsg):
+
+    if text == "" or text == " ":
+        _temp = "Помощь:\n"
+        for i in actions.keys():
+            _temp += f"{i}\n"
+        g = app.send_message(chatid,_temp)
+        time.sleep(20)
+        app.delete_messages(chatid,g.id)
+        return
+    elif text in actions.keys():
+        app.send_chat_action(chatid, actions[text])
+
+    else:
+        app.send_message(chatid, "Ненайдено \n Напишите .setAction")
+
+
+def text_effect1(chatid, text, omsg):
+    t = ""
+    mess = app.send_message(chatid,"g")
+    for i in text:
+        t += i
+        if len(t) >= 7:
+            t = t[1:]
+        try:
+            app.edit_message_text(chatid,mess.id,f"| {t} |")
+        except:
+            pass
+        time.sleep(0.2)
+    app.delete_messages(chatid,mess.id)
 
 
 
 
-def _(chatid, text, omsg):  # Шаблон
-    pass
 
 
 
@@ -99,7 +139,7 @@ def _(chatid, text, omsg):  # Шаблон
 def botclear(chatid, text, omsg):
 
     ids = {}
-
+    
     history = app.get_chat_history(chat_id=chatid,limit=140)
     for i in spambots:
         botid =(telebot.TeleBot(i).get_me().username)
@@ -114,9 +154,6 @@ def botclear(chatid, text, omsg):
 
 
 
-    # for i in spambots:
-    #     bot = telebot.TeleBot(i)
-    #     bot.remove_webhook()
 def getidd(chatid, text, omsg):
     msgtosend =f'''CHATID: {chatid}
 USERNAME: {omsg.reply_to_message.from_user.username}
@@ -217,7 +254,7 @@ def banall(chatid, text, omsg):
 
 def dell(chatid, text, omsg):
     if chatid == app.get_me().id:
-        app.send_message(chatid, "Нажми просто очистить историю)))")
+        app.send_message(chatid, f"Нажми просто очистить историю)))\n{len(tuple(app.get_chat_history(chatid)))} сообщений")
     else:
         history = tuple(app.get_chat_history(chatid))[::-1]
         for i in history:
@@ -300,9 +337,15 @@ def dice(chatid, text, omsg):
     dicev = -1
 
     while dicev != int(text):
+
         d = app.send_dice(omsg.chat.id, "🎲")
-        # app.delete_messages(d.chat.id, d.id)
         dicev = d.dice.value
+        if (dicev != int(text)):
+            app.delete_messages(chatid,d.id)
+            time.sleep(0.005)
+
+
+
 
 
 def cram(chatid, userid, omsg):
@@ -326,21 +369,16 @@ def dText(id_chat, text, omsg=0):
         app.edit_message_text(id_chat, (msg.id), (d + "▓"))
     app.edit_message_text(id_chat, (msg.id), (d))
     return False
-app = Client("my_account", 1,"2")
-tgfunctions = {".clock":clocktime,".online":notifercheak,".botclear":botclear,".addbots":addbots,".id":getidd,".dn":n,".dText":dText,".steal":cram,".dice":dice,".gpt":chatgpt,".spam":lagspam,".en":trans,".heart":heart,".calc":calc,".log":logs,".aDell":dell,".help":help,".banall":banall,".spamjoin":botjoiner,".jlbots":jlbot,".botmsg":botmsg}
+app = Client("my_account", 666666,"hash")
+tgfunctions = {".setAction":fake_action,".bText":text_effect1,".clock":clocktime,".online":notifercheak,".botclear":botclear,".addbots":addbots,".id":getidd,".dn":n,".dText":dText,".steal":cram,".dice":dice,".gpt":chatgpt,".spam":lagspam,".en":trans,".heart":heart,".calc":calc,".log":logs,".aDell":dell,".help":help,".banall":banall,".spamjoin":botjoiner,".jlbots":jlbot,".botmsg":botmsg}
 
 
-import random
 
-
-@app.on_message(filters.left_chat_member & filters.group)
-def left(client,mess):
-    if lefter:
-        app.send_message(mess.chat.id,f"Ливнул - {mess.left_chat_member.first_name}")
 
 
 @app.on_message(filters.me & filters.text)
 def s(client,mess):
+
     m = mess.text.split()
     if m[0] in tgfunctions.keys():
         app.delete_messages(mess.chat.id,mess.id)
