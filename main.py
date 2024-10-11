@@ -300,14 +300,6 @@ def heart(chatid, text, omsg):
                 break
 
 
-def flefter(chatid, text, omsg):
-    global lefter
-    if lefter:
-        lefter = False
-    else:
-        lefter = True
-    app.send_message(chatid, f"lefter now is {lefter}")
-
 
 def trans(chatid, text, omsg):
     tr = Translator()
